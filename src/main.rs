@@ -92,8 +92,9 @@ fn find_impl(path: &Path, pattern: &Either<String, Regex>, search_type: _FileTyp
         for entry in entries {
             if let Ok(entry) = entry {
                 if let Ok(file_type) = entry.file_type() {
-                    let entry_path = entry.path();
-                    let file_name = entry_path
+                    let curr_file = entry.path();
+                    let full_path = curr_file.to_str().unwrap();
+                    let file_name = curr_file
                         .file_name()
                         .unwrap_or(OsStr::new(""))
                         .to_str()
@@ -101,18 +102,18 @@ fn find_impl(path: &Path, pattern: &Either<String, Regex>, search_type: _FileTyp
                     match pattern {
                         Left(s) => {
                             if s == file_name && file_type_matches(file_type, search_type) {
-                                println!("{}", entry_path.to_str().unwrap());
+                                println!("{}", full_path);
                             }
                         },
                         Right(r) => {
                             if r.is_match(file_name) &&
                                 file_type_matches(file_type, search_type) {
-                                println!("{}", entry_path.to_str().unwrap());
+                                println!("{}", full_path);
                             }
                         }
                     }
                     if file_type.is_dir() {
-                        find_impl(&entry_path, pattern, search_type);
+                        find_impl(&curr_file, pattern, search_type);
                     }
                 }
             }
