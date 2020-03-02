@@ -8,6 +8,7 @@ use clap::{App, Arg};
 use either::Either;
 use either::Either::{Left, Right};
 use regex::Regex;
+use std::ffi::OsStr;
 
 // sigh
 #[derive(Clone, Copy)]
@@ -92,17 +93,21 @@ fn find_impl(path: &Path, pattern: &Either<String, Regex>, search_type: _FileTyp
             if let Ok(entry) = entry {
                 if let Ok(file_type) = entry.file_type() {
                     let entry_path = entry.path();
-                    let full_path = entry_path.to_str().unwrap_or("");
-                    let file_name = basename(full_path);
+                    let file_name = entry_path
+                        .file_name()
+                        .unwrap_or(OsStr::new(""))
+                        .to_str()
+                        .unwrap_or("");
                     match pattern {
                         Left(s) => {
                             if s == file_name && file_type_matches(file_type, search_type) {
-                                println!("{}", full_path);
+                                println!("{}", entry_path.to_str().unwrap());
                             }
                         },
                         Right(r) => {
-                            if r.is_match(file_name) && file_type_matches(file_type, search_type) {
-                                println!("{}", full_path);
+                            if r.is_match(file_name) &&
+                                file_type_matches(file_type, search_type) {
+                                println!("{}", entry_path.to_str().unwrap());
                             }
                         }
                     }
@@ -112,15 +117,6 @@ fn find_impl(path: &Path, pattern: &Either<String, Regex>, search_type: _FileTyp
                 }
             }
         }
-    }
-}
-
-// jfc why doesn't this method exist in the fs module
-fn basename(path: &str) -> &str {
-    let mut pieces = path.rsplit("/");
-    match pieces.next() {
-        Some(p) => p.into(),
-        None => path.into(),
     }
 }
 
