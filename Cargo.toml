@@ -8,3 +8,5 @@ edition = "2018"
 
 [dependencies]
 clap = "2.33.0"
+either = "1.5.3"
+regex = "1"
